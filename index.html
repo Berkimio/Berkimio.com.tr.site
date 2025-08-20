@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="keywords" content="Berkimio, Berk Can, yazılım, web, developer, coder">
+  <meta name="description" content="Berk Can - Yazılım geliştirici, öğrenci ve teknoloji tutkunu. Projelerimi keşfetmek için web sitemi ziyaret edin.">
+  <title>Berkimio</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&display=swap');
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Poppins', sans-serif;
+    }
+
+    body {
+      background: #0f172a;
+      color: #e2e8f0;
+      line-height: 1.6;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    section {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+    }
+
+    .yakinda {
+      font-size: clamp(2rem, 6vw, 4rem); 
+      font-weight: 700;
+      color: #38bdf8;
+      text-transform: uppercase;
+      letter-spacing: 4px;
+      position: relative;
+      animation: fadeIn 2s ease-in-out, pulse 2s infinite;
+      white-space: nowrap;
+    }
+
+    .yakinda::after {
+      content: "•••";
+      position: absolute;
+      right: -60px;
+      animation: dots 1.5s infinite steps(3);
+      color: #0ea5e9;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes pulse {
+      0%, 100% { text-shadow: 0 0 10px #38bdf8; }
+      50% { text-shadow: 0 0 20px #0ea5e9; }
+    }
+
+    @keyframes dots {
+      0%   { content: ""; }
+      33%  { content: "."; }
+      66%  { content: ".."; }
+      100% { content: "..."; }
+    }
+
+    footer {
+      text-align: center;
+      padding: 20px;
+      font-size: 0.9rem;
+      color: #64748b;
+      border-top: 1px solid #1e293b;
+    }
+  </style>
+</head>
+<body>
+
+  <section>
+    <h1 class="yakinda">Coming Soon</h1> 
+  </section>
+
+  <footer>
+    © 2025 Berkimio | Tüm Hakları Saklıdır
+  </footer>
+
+</body>
+</html>
