@@ -140,6 +140,18 @@
         z-index: -1;
     }
 
+/* Form durum stilleri */
+.form-success { color: var(--success); }
+.form-error { color: var(--accent); }
+.form-loading { color: var(--brand); }
+
+/* reCAPTCHA container için */
+.g-recaptcha {
+    margin: 15px 0;
+    display: flex;
+    justify-content: center;
+}
+
     .nav { 
         display: flex; 
         align-items: center; 
@@ -910,7 +922,7 @@
             </div>
         </section>
 
-      <section id="iletisim">
+     <section id="iletisim">
     <h2 class="section-title reveal">İletişim</h2>
     <p class="section-sub reveal">Yeni bir proje fikriniz mi var? Veya sadece merhaba demek mi istiyorsunuz?</p>
 
@@ -918,19 +930,23 @@
         action="https://getform.io/f/arogkmqb" 
         method="POST">
 
-        <input type="text" name="name" placeholder="Adınız Soyadınız" required>
+        <input type="text" name="name" placeholder="Adınız Soyadınız" required minlength="2">
         <input type="email" name="email" placeholder="E-posta Adresiniz" required>
-        <textarea name="message" placeholder="Mesajınızdan bahsedin..." required></textarea>
+        <textarea name="message" placeholder="Mesajınızdan bahsedin..." required minlength="10"></textarea>
         
         <input type="hidden" name="_gotcha" style="display:none !important">
         <input type="hidden" name="g-recaptcha-response" id="g-recaptcha-response">
         
-        <div class="g-recaptcha" data-sitekey="6Ldg1hosAAAAANfHo7N33WRSyKd808gPiPo1gnnG"></div>
+        <!-- reCAPTCHA callback ekleyin -->
+        <div class="g-recaptcha" data-sitekey="6Ldg1hosAAAAANfHo7N33WRSyKd808gPiPo1gnnG" data-callback="onRecaptchaLoad"></div>
         <br>
 
         <button class="btn primary" type="submit">
             <i class="fas fa-paper-plane" aria-hidden="true"></i> Gönder
         </button>
+        
+        <!-- Form durum mesajı -->
+        <div id="formStatus" style="grid-column: span 2; text-align: center; margin-top: 10px; display: none;"></div>
     </form>
 </section>
 
@@ -1172,7 +1188,7 @@
         closeMenuBtn.addEventListener('click', closeMobileMenu);
     }
 
-    // --- 7. FORM GÖNDERİMİ VE TOAST ---
+    // --- 7. FORM GÖNDERİMİ, reCAPTCHA KONTROLÜ ve FORM SIFIRLAMA ---
     function showToast(message, type = 'success') {
         const icon = type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle';
         const color = type === 'success' ? 'var(--success)' : 'var(--accent)';
@@ -1187,105 +1203,160 @@
         }, 4000);
     }
 
-    if (contactForm && toast) {
-        contactForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            
-            const formData = new FormData(contactForm);
-            const btn = contactForm.querySelector('button');
-            const originalText = btn.innerHTML;
-
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Gönderiliyor...';
-            btn.disabled = true;
-
-            try {
-                const response = await fetch(contactForm.action, {
-                    method: 'POST',
-                    body: formData,
-                    headers: {
-                        'Accept': 'application/json'
-                    }
-                });
-
-                if (response.ok) {
-                    contactForm.reset();
-                    if (typeof grecaptcha !== 'undefined') {
-                        grecaptcha.reset();
-                    }
-                    showToast('Mesajınız başarıyla iletildi!');
-                } else {
-                    showToast('Bir hata oluştu, lütfen tekrar deneyin.', 'error');
-                }
-            } catch (error) {
-                showToast('Bağlantı hatası, lütfen tekrar deneyin.', 'error');
-            } finally {
-                btn.innerHTML = originalText;
-                btn.disabled = false;
-            }
-        });
-    }
+   // --- FORM GÖNDERİMİ ve OTOMATİK TEMİZLEME ---
+function showToast(message, type = 'success') {
+    const icon = type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle';
+    const color = type === 'success' ? 'var(--success)' : 'var(--accent)';
     
-// Tüm yaygın kısayolları engelle
-document.onkeydown = function (e) {
-    // Büyük/küçük harf farkı olmadan kontrol
-    const key = e.key.toLowerCase();
-
-    if (
-        e.keyCode === 123 || // F12
-        (e.ctrlKey && e.shiftKey && key === 'i') || // Ctrl+Shift+I
-        (e.ctrlKey && e.shiftKey && key === 'j') || // Ctrl+Shift+J
-        (e.ctrlKey && key === 'u') || // Ctrl+U
-        (e.ctrlKey && key === 's') || // Ctrl+S
-        (e.ctrlKey && key === 'c') || // Ctrl+C
-        (e.ctrlKey && key === 'v') || // Ctrl+V
-        (e.ctrlKey && key === 'x') || // Ctrl+X
-        (e.ctrlKey && key === 'p') || // Ctrl+P
-        (e.ctrlKey && key === 'i') || // Ctrl+i
-        (e.ctrlKey && e.shiftKey && key === 'c') // Ctrl+Shift+C
-    ) {
-        e.preventDefault();
-        return false;
-    }
-};
-
-// Sağ tık menüsünü engelle
-document.addEventListener('contextmenu', e => e.preventDefault());
-
-// Konsol algılama yöntemi 1 (Object.defineProperty)
-let devtoolsOpen = false;
-const element = new Image();
-Object.defineProperty(element, 'id', {
-    get: function () {
-        devtoolsOpen = true;
-    }
-});
-
-
-
-// Konsol algılama yöntemi 3 (debugger tuzağı)
-function detectDebuggerTrap() {
-    let start = Date.now();
-    debugger;
-    return Date.now() - start > 50;
+    toast.innerHTML = `<i class="fas ${icon}" style="color: ${color}; margin-right: 12px; font-size:1.2rem;"></i><span style="font-weight:500">${message}</span>`;
+    toast.style.transform = 'translateX(-50%) translateY(0)';
+    toast.style.opacity = '1';
+    
+    setTimeout(() => {
+        toast.style.transform = 'translateX(-50%) translateY(100px)';
+        toast.style.opacity = '0';
+    }, 4000);
 }
 
-// Düzenli kontrol
-setInterval(function () {
-    devtoolsOpen = false;
-    console.log('%c', element);
-    if (devtoolsOpen || detectDevTools() || detectDebuggerTrap()) {
-        document.body.innerHTML = '';
-        alert("Kodları mı kurcalıyorsun? 🙃");
-        window.location.href = "index.html";
+// reCAPTCHA doğrulama fonksiyonu
+function validateRecaptcha() {
+    if (typeof grecaptcha === 'undefined') {
+        showToast('Güvenlik doğrulaması yükleniyor, lütfen bekleyin...', 'error');
+        return false;
     }
-}, 500);
+    
+    const recaptchaResponse = grecaptcha.getResponse();
+    if (!recaptchaResponse) {
+        showToast('Lütfen "Ben robot değilim" doğrulamasını yapın.', 'error');
+        return false;
+    }
+    
+    // reCAPTCHA token'ını hidden input'a ekle
+    document.getElementById('g-recaptcha-response').value = recaptchaResponse;
+    return true;
+}
 
-// Sayfa kaynağı görüntüleme girişimi engelleme
-document.addEventListener('beforeprint', function (e) {
-    alert("Yazdırma Kullanmak yasaktır!");
-    e.preventDefault();
+// Formu tamamen sıfırlama fonksiyonu
+function resetFormCompletely() {
+    if (contactForm) {
+        // Formu sıfırla
+        contactForm.reset();
+        
+        // reCAPTCHA'yı sıfırla
+        if (typeof grecaptcha !== 'undefined') {
+            grecaptcha.reset();
+        }
+        
+        // Hidden input'ları temizle
+        document.getElementById('g-recaptcha-response').value = '';
+        
+        console.log('Form başarıyla temizlendi');
+    }
+}
+
+// Form gönderim kontrolü
+if (contactForm && toast) {
+    contactForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        // Form alanlarını kontrol et
+        const name = contactForm.querySelector('[name="name"]').value.trim();
+        const email = contactForm.querySelector('[name="email"]').value.trim();
+        const message = contactForm.querySelector('[name="message"]').value.trim();
+        
+        // Temel validasyon
+        if (!name || !email || !message) {
+            showToast('Lütfen tüm alanları doldurun.', 'error');
+            return;
+        }
+        
+        // İsim uzunluğu kontrolü
+        if (name.length < 2) {
+            showToast('Lütfen geçerli bir isim girin (en az 2 karakter).', 'error');
+            return;
+        }
+        
+        // Email validasyonu
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+            showToast('Lütfen geçerli bir e-posta adresi girin.', 'error');
+            return;
+        }
+        
+        // Mesaj uzunluğu kontrolü
+        if (message.length < 10) {
+            showToast('Lütfen daha detaylı bir mesaj yazın (en az 10 karakter).', 'error');
+            return;
+        }
+        
+        // reCAPTCHA doğrulama
+        if (!validateRecaptcha()) {
+            return;
+        }
+        
+        const btn = contactForm.querySelector('button');
+        const originalText = btn.innerHTML;
+
+        // Butonu devre dışı bırak ve loading state göster
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Gönderiliyor...';
+        btn.disabled = true;
+
+        try {
+            const formData = new FormData(contactForm);
+            
+            const response = await fetch(contactForm.action, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'Accept': 'application/json'
+                }
+            });
+
+            if (response.ok) {
+                // BAŞARILI GÖNDERİM - FORM OTOMATİK SIFIRLANIYOR
+                showToast('Mesajınız başarıyla iletildi! En kısa sürede dönüş yapacağım.');
+                
+                // Formu hemen sıfırla
+                resetFormCompletely();
+                
+            } else {
+                // Sunucu hatası
+                showToast('Bir hata oluştu. Lütfen tekrar deneyin.', 'error');
+            }
+        } catch (error) {
+            // Ağ hatası
+            console.error('Form gönderim hatası:', error);
+            showToast('Bağlantı hatası oluştu. Lütfen internet bağlantınızı kontrol edip tekrar deneyin.', 'error');
+        } finally {
+            // Butonu eski haline getir
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+        }
+    });
+}
+
+// reCAPTCHA yüklendikten sonra çalışacak callback
+function onRecaptchaLoad() {
+    console.log('reCAPTCHA başarıyla yüklendi');
+}
+
+// Sayfa kapatılırken form durumunu temizle
+window.addEventListener('beforeunload', () => {
+    resetFormCompletely();
 });
 
+// reCAPTCHA expire olduğunda kontrol et
+if (typeof grecaptcha !== 'undefined') {
+    grecaptcha.ready(function() {
+        // reCAPTCHA süresi dolduğunda
+        setInterval(function() {
+            const recaptchaResponse = grecaptcha.getResponse();
+            if (!recaptchaResponse && document.getElementById('g-recaptcha-response').value) {
+                document.getElementById('g-recaptcha-response').value = '';
+            }
+        }, 30000); // Her 30 saniyede bir kontrol et
+    });
+}
 
 </script>
 </body>
