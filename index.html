@@ -720,10 +720,10 @@
 
     <div class="mobile-menu-overlay" id="mobileMenu">
         <button class="close-btn" id="closeMenu"><i class="fas fa-times"></i></button>
-        <a href="#anasayfa" onclick="closeMobileMenu()">Anasayfa</a>
-        <a href="#projeler" onclick="closeMobileMenu()">Projeler</a>
-        <a href="#hakkimda" onclick="closeMobileMenu()">Hakkımda</a>
-        <a href="#iletisim" onclick="closeMobileMenu()">İletişim</a>
+        <a href="#anasayfa" onclick="closeMobileMenu()" aria-label="Ana sayfaya git">Anasayfa</a>
+        <a href="#projeler" onclick="closeMobileMenu()" aria-label="Projelere git">Projeler</a>
+        <a href="#hakkimda" onclick="closeMobileMenu()" aria-label="Hakkımda sayfasına git">Hakkımda</a>
+        <a href="#iletisim" onclick="closeMobileMenu()" aria-label="İletişim sayfasına git">İletişim</a>
     </div>
 
     <header class="site" id="header">
@@ -842,30 +842,30 @@
                 <article class="card reveal">
                     <div class="thumb">
                          <a href="#">
-                            <img src="images/" onerror="this.src='https://placehold.co/600x400/1e293b/e6eefc?text=Coming+Soon'" alt="Yeni Proje"> 
+                           <img src="images/placeholder.jpg" onerror="this.src='https://placehold.co/600x400/1e293b/e6eefc?text=Coming+Soon'" alt="Yeni Proje"> 
                         </a> 	
                     </div>
                     <h3>Yeni Proje</h3>
                     <p>Yakında eklenecek harika bir proje.</p>
                     <div class="chips">
-                        <span class="chip"></span>
-                        <span class="chip"></span>
-                        <span class="chip"></span>
+                        <span class="chip">React</span>
+                        <span class="chip">Node.js</span>
+                        <span class="chip">MongoDB</span>
                     </div>
                 </article>
 
                 <article class="card reveal">
                     <div class="thumb">
                          <a href="#">
-                            <img src="images/fisilda-app.jpg" onerror="this.src='https://placehold.co/600x400/1e293b/e6eefc?text=Coming+Soon'" alt="Yeni Proje"> 
+                           <img src="images/placeholder.jpg" onerror="this.src='https://placehold.co/600x400/1e293b/e6eefc?text=Coming+Soon'" alt="Yeni Proje"> 
                         </a> 	
                     </div>
                     <h3>Yeni Proje</h3>
                     <p>Yakında eklenecek harika bir proje.</p>
                     <div class="chips">
-                        <span class="chip"></span>
-                        <span class="chip"></span>
-                        <span class="chip"></span>
+                        <span class="chip">Next.js</span>
+                        <span class="chip">TypeScript</span>
+                        <span class="chip">PostgreSQL</span>
                     </div>
                 </article>
 
@@ -923,7 +923,8 @@
         <textarea name="message" placeholder="Mesajınızdan bahsedin..." required></textarea>
         
         <input type="hidden" name="_gotcha" style="display:none !important">
-
+        <input type="hidden" name="g-recaptcha-response" id="g-recaptcha-response">
+        
         <div class="g-recaptcha" data-sitekey="6Ldg1hosAAAAANfHo7N33WRSyKd808gPiPo1gnnG"></div>
         <br>
 
@@ -954,8 +955,8 @@
 
 <script src="https://www.google.com/recaptcha/api.js" async defer></script>
 
- <script>
-    // --- TEMEL DEĞİŞKEN TANIMLARI (Tüm fonksiyonlar için ortak erişim) ---
+<script>
+    // --- TEMEL DEĞİŞKEN TANIMLARI ---
     const body = document.body;
     const themeToggle = document.getElementById('themeToggle');
     const progressBar = document.getElementById('progressBar');
@@ -969,7 +970,7 @@
     const contactForm = document.getElementById('contactForm');
     const toast = document.getElementById('toast');
 
-    // --- 1. YILDIZ EFEKTİ (Canvas) ---
+    // --- 1. YILDIZ EFEKTİ ---
     const canvas = document.getElementById('stars');
     let ctx, width, height, stars;
     const numStars = 150;
@@ -1000,7 +1001,6 @@
             const isLight = body.classList.contains('light');
 
             stars.forEach(star => {
-                // Tema rengine göre opaklık ayarı
                 const baseOpacity = isLight ? 0.3 : 0.8; 
                 ctx.fillStyle = `rgba(255, 255, 255, ${star.opacity * baseOpacity})`;
                 ctx.beginPath();
@@ -1011,9 +1011,7 @@
 
         function updateStars() {
             stars.forEach(star => {
-                // Yatay hareket
                 star.x += star.velocity * 0.1;
-                // Ekrandan çıktıysa başa sar
                 if (star.x > width) {
                     star.x = 0;
                     star.y = Math.random() * height;
@@ -1037,12 +1035,10 @@
         animateStars();
     }
 
-
-    // --- 2. YIL OTOMASYONU (Footer) ---
+    // --- 2. YIL OTOMASYONU ---
     document.addEventListener('DOMContentLoaded', function() {
         if (yilSpan) {
-            // Başlangıç yılı 2025
-            const startYear = 2025; 
+            const startYear = 2025;
             const currentYear = new Date().getFullYear();
 
             yilSpan.textContent = (startYear && startYear < currentYear)
@@ -1051,7 +1047,7 @@
         }
     });
 
-    // --- 3. TEMA DEĞİŞTİRME (Light/Dark Mode) ---
+    // --- 3. TEMA DEĞİŞTİRME ---
     function applyTheme(theme) {
         body.classList.remove('light', 'dark');
         if (theme === 'light') {
@@ -1061,7 +1057,6 @@
         }
     }
 
-    // Başlangıç temasını belirle ve uygula
     function initializeTheme() {
         const savedTheme = localStorage.getItem('theme');
         const prefersLight = window.matchMedia('(prefers-color-scheme: light)').matches;
@@ -1082,13 +1077,24 @@
             const newTheme = current === 'dark' ? 'light' : 'dark';
             applyTheme(newTheme);
             localStorage.setItem('theme', newTheme);
-
-            // Tema değişince yıldızları yeniden çiz (opaklık değişimi için)
-            if (canvas) drawStars(); 
+            if (canvas) drawStars();
         });
     }
 
-    // --- 4. SCROLL İŞLEMLERİ (Progress Bar, Header Shadow, Scroll Spy) ---
+    // --- 4. SCROLL İŞLEMLERİ ---
+    function throttle(func, limit) {
+        let inThrottle;
+        return function() {
+            const args = arguments;
+            const context = this;
+            if (!inThrottle) {
+                func.apply(context, args);
+                inThrottle = true;
+                setTimeout(() => inThrottle = false, limit);
+            }
+        }
+    }
+
     function updateScroll() {
         const scrollTop = window.scrollY;
         
@@ -1110,12 +1116,10 @@
             }
         }
 
-        // Active Link Highlighting (Scroll Spy)
+        // Active Link Highlighting
         let current = '';
         sections.forEach(section => {
-            // section.offsetTop kullanmak yerine getBoundingClientRect daha güvenilir
             const sectionRect = section.getBoundingClientRect();
-            // Ekranın üstünden 150px aşağısını referans alıyoruz
             if (sectionRect.top <= 150 && sectionRect.bottom >= 150) { 
                 current = section.getAttribute('id');
             }
@@ -1123,24 +1127,22 @@
 
         navLinks.forEach(link => {
             link.classList.remove('active');
-            // Linkin href'inde mevcut section ID'si var mı kontrol et
             if (link.getAttribute('href').includes(current)) { 
                 link.classList.add('active');
             }
         });
     }
 
-    window.addEventListener('scroll', updateScroll);
-    updateScroll(); // Sayfa yüklendiğinde bir kez çalıştır
+    window.addEventListener('scroll', throttle(updateScroll, 100));
+    updateScroll();
 
-    // --- 5. SCROLL REVEAL ANIMASYONU (IntersectionObserver) ---
+    // --- 5. SCROLL REVEAL ANIMASYONU ---
     const revealElements = document.querySelectorAll('.reveal');
     if (revealElements.length > 0) {
         const observer = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
                 if (entry.isIntersecting) {
                     entry.target.classList.add('visible');
-                    // Animasyon bir kez göründükten sonra gözlemlemeyi bırak
                     observer.unobserve(entry.target);
                 }
             });
@@ -1170,48 +1172,58 @@
         closeMenuBtn.addEventListener('click', closeMobileMenu);
     }
 
-    // --- 7. FORM GÖNDERİMİ VE TOAST (Simüle edilmiş) ---
-    // (Gerçek form gönderimi için önceki konuşmadaki AJAX kodunu kullanmalısınız.)
+    // --- 7. FORM GÖNDERİMİ VE TOAST ---
+    function showToast(message, type = 'success') {
+        const icon = type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle';
+        const color = type === 'success' ? 'var(--success)' : 'var(--accent)';
+        
+        toast.innerHTML = `<i class="fas ${icon}" style="color: ${color}; margin-right: 12px; font-size:1.2rem;"></i><span style="font-weight:500">${message}</span>`;
+        toast.style.transform = 'translateX(-50%) translateY(0)';
+        toast.style.opacity = '1';
+        
+        setTimeout(() => {
+            toast.style.transform = 'translateX(-50%) translateY(100px)';
+            toast.style.opacity = '0';
+        }, 4000);
+    }
+
     if (contactForm && toast) {
-        contactForm.addEventListener('submit', (e) => {
+        contactForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             
-            // ReCAPTCHA kontrolü (Eğer reCAPTCHA token'ını sunucuya göndermiyorsanız,
-            // burada sadece frontend'de işaretlenip işaretlenmediğini kontrol edebilirsiniz)
-            const recaptchaResponse = contactForm.querySelector('[name="g-recaptcha-response"]');
-            if (recaptchaResponse && !recaptchaResponse.value) {
-                // Bu kısmı Getform'a bırakıyorsanız bu kontrolü kaldırın
-                // veya özelleştirilmiş bir uyarı ekleyin.
-            }
-            
+            const formData = new FormData(contactForm);
             const btn = contactForm.querySelector('button');
             const originalText = btn.innerHTML;
 
-            // Simüle edilmiş gönderim spinner'ı
-            btn.dataset.original = originalText;
             btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Gönderiliyor...';
             btn.disabled = true;
 
-            setTimeout(() => {
-                // Bu simülasyon yerine Getform veya AJAX gönderimi kodunuz gelmeli.
-                contactForm.reset();
-                btn.innerHTML = btn.dataset.original;
+            try {
+                const response = await fetch(contactForm.action, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'Accept': 'application/json'
+                    }
+                });
+
+                if (response.ok) {
+                    contactForm.reset();
+                    if (typeof grecaptcha !== 'undefined') {
+                        grecaptcha.reset();
+                    }
+                    showToast('Mesajınız başarıyla iletildi!');
+                } else {
+                    showToast('Bir hata oluştu, lütfen tekrar deneyin.', 'error');
+                }
+            } catch (error) {
+                showToast('Bağlantı hatası, lütfen tekrar deneyin.', 'error');
+            } finally {
+                btn.innerHTML = originalText;
                 btn.disabled = false;
-
-                // Toast Göster
-                toast.innerHTML = '<i class="fas fa-check-circle" style="color: var(--success); margin-right: 12px; font-size:1.2rem;" aria-hidden="true"></i><span style="font-weight:500">Mesajınız başarıyla iletildi.</span>';
-                toast.style.transform = 'translateX(-50%) translateY(0)';
-                toast.style.opacity = '1';
-                
-                setTimeout(() => {
-                    toast.style.transform = 'translateX(-50%) translateY(100px)';
-                    toast.style.opacity = '0';
-                }, 4000);
-
-            }, 1500);
+            }
         });
     }
-
 </script>
 </body>
 </html>
