@@ -954,12 +954,28 @@
 
 <script src="https://www.google.com/recaptcha/api.js" async defer></script>
 
-    <script>
-        // --- Yıldız Efekti (Canvas) ---
-        const canvas = document.getElementById('stars');
-        const ctx = canvas.getContext('2d');
-        let width, height, stars;
-        const numStars = 150;
+ <script>
+    // --- TEMEL DEĞİŞKEN TANIMLARI (Tüm fonksiyonlar için ortak erişim) ---
+    const body = document.body;
+    const themeToggle = document.getElementById('themeToggle');
+    const progressBar = document.getElementById('progressBar');
+    const header = document.getElementById('header');
+    const navLinks = document.querySelectorAll('.desktop-menu a');
+    const sections = document.querySelectorAll('section');
+    const mobileMenu = document.getElementById('mobileMenu');
+    const openMenuBtn = document.getElementById('openMenu');
+    const closeMenuBtn = document.getElementById('closeMenu');
+    const yilSpan = document.getElementById('yil');
+    const contactForm = document.getElementById('contactForm');
+    const toast = document.getElementById('toast');
+
+    // --- 1. YILDIZ EFEKTİ (Canvas) ---
+    const canvas = document.getElementById('stars');
+    let ctx, width, height, stars;
+    const numStars = 150;
+
+    if (canvas) {
+        ctx = canvas.getContext('2d');
 
         function resizeCanvas() {
             width = canvas.width = window.innerWidth;
@@ -974,16 +990,18 @@
                     y: Math.random() * height,
                     radius: Math.random() * 1.5 + 0.5,
                     velocity: Math.random() * 0.2 + 0.1,
-                    opacity: Math.random() 
+                    opacity: Math.random()
                 });
             }
         }
 
         function drawStars() {
             ctx.clearRect(0, 0, width, height);
+            const isLight = body.classList.contains('light');
+
             stars.forEach(star => {
-                // Opaklık tema rengine göre ayarlanabilir
-                const baseOpacity = document.body.classList.contains('light') ? 0.3 : 0.8;
+                // Tema rengine göre opaklık ayarı
+                const baseOpacity = isLight ? 0.3 : 0.8; 
                 ctx.fillStyle = `rgba(255, 255, 255, ${star.opacity * baseOpacity})`;
                 ctx.beginPath();
                 ctx.arc(star.x, star.y, star.radius, 0, Math.PI * 2);
@@ -993,7 +1011,9 @@
 
         function updateStars() {
             stars.forEach(star => {
-                star.x += star.velocity * 0.1; 
+                // Yatay hareket
+                star.x += star.velocity * 0.1;
+                // Ekrandan çıktıysa başa sar
                 if (star.x > width) {
                     star.x = 0;
                     star.y = Math.random() * height;
@@ -1015,98 +1035,183 @@
         resizeCanvas();
         initStars();
         animateStars();
+    }
 
 
-        // --- Yıl Otomasyonu (Footer) ---
-        document.addEventListener('DOMContentLoaded', function() {
-            const yilSpan = document.getElementById('yil');
-            if (yilSpan) {
-                // Projenin başladığı yılı belirleyin (örneğin 2024)
-                const startYear = 2025; 
-                const currentYear = new Date().getFullYear();
+    // --- 2. YIL OTOMASYONU (Footer) ---
+    document.addEventListener('DOMContentLoaded', function() {
+        if (yilSpan) {
+            // Başlangıç yılı 2025
+            const startYear = 2025; 
+            const currentYear = new Date().getFullYear();
 
-                yilSpan.textContent = (startYear && startYear < currentYear)
-                    ? `${startYear}–${currentYear}`
-                    : `${currentYear}`;
-            }
-        });
-
-        // --- Tema Değiştirme (Light/Dark Mode) ---
-        const themeToggle = document.getElementById('themeToggle');
-        const body = document.body;
-
-        function checkSystemTheme() {
-            if (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) {
-                body.classList.add('light');
-            } else {
-                body.classList.remove('light');
-            }
+            yilSpan.textContent = (startYear && startYear < currentYear)
+                ? `${startYear}–${currentYear}`
+                : `${currentYear}`;
         }
-        
-        // LocalStorage'ı kontrol et, yoksa sistem temasını kullan
-        if (localStorage.getItem('theme') === 'light') {
+    });
+
+    // --- 3. TEMA DEĞİŞTİRME (Light/Dark Mode) ---
+    function applyTheme(theme) {
+        body.classList.remove('light', 'dark');
+        if (theme === 'light') {
             body.classList.add('light');
-        } else if (localStorage.getItem('theme') === 'dark') {
-            body.classList.remove('light');
         } else {
-            checkSystemTheme();
+            body.classList.add('dark');
         }
+    }
 
+    // Başlangıç temasını belirle ve uygula
+    function initializeTheme() {
+        const savedTheme = localStorage.getItem('theme');
+        const prefersLight = window.matchMedia('(prefers-color-scheme: light)').matches;
+
+        if (savedTheme) {
+            applyTheme(savedTheme);
+        } else if (prefersLight) {
+            applyTheme('light');
+        } else {
+            applyTheme('dark');
+        }
+    }
+    initializeTheme();
+
+    if (themeToggle) {
         themeToggle.addEventListener('click', () => {
-            body.classList.toggle('light');
-            const theme = body.classList.contains('light') ? 'light' : 'dark';
-            localStorage.setItem('theme', theme);
+            const current = body.classList.contains('light') ? 'light' : 'dark';
+            const newTheme = current === 'dark' ? 'light' : 'dark';
+            applyTheme(newTheme);
+            localStorage.setItem('theme', newTheme);
+
+            // Tema değişince yıldızları yeniden çiz (opaklık değişimi için)
+            if (canvas) drawStars(); 
+        });
+    }
+
+    // --- 4. SCROLL İŞLEMLERİ (Progress Bar, Header Shadow, Scroll Spy) ---
+    function updateScroll() {
+        const scrollTop = window.scrollY;
+        
+        // Progress Bar
+        if (progressBar) {
+            const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+            if (docHeight > 0) {
+                 const scrollPercent = (scrollTop / docHeight) * 100;
+                 progressBar.style.width = scrollPercent + '%';
+            }
+        }
+        
+        // Header Shadow
+        if (header) {
+            if (scrollTop > 50) {
+                header.style.boxShadow = '0 10px 30px rgba(0,0,0,0.1)';
+            } else {
+                header.style.boxShadow = 'none';
+            }
+        }
+
+        // Active Link Highlighting (Scroll Spy)
+        let current = '';
+        sections.forEach(section => {
+            // section.offsetTop kullanmak yerine getBoundingClientRect daha güvenilir
+            const sectionRect = section.getBoundingClientRect();
+            // Ekranın üstünden 150px aşağısını referans alıyoruz
+            if (sectionRect.top <= 150 && sectionRect.bottom >= 150) { 
+                current = section.getAttribute('id');
+            }
         });
 
-        // --- Scroll Animasyonu (Reveal) ---
-        const revealElements = document.querySelectorAll('.reveal');
+        navLinks.forEach(link => {
+            link.classList.remove('active');
+            // Linkin href'inde mevcut section ID'si var mı kontrol et
+            if (link.getAttribute('href').includes(current)) { 
+                link.classList.add('active');
+            }
+        });
+    }
 
-        function revealOnScroll() {
-            const windowHeight = window.innerHeight;
-            revealElements.forEach(el => {
-                const elementTop = el.getBoundingClientRect().top;
-                const revealPoint = 150;
+    window.addEventListener('scroll', updateScroll);
+    updateScroll(); // Sayfa yüklendiğinde bir kez çalıştır
 
-                if (elementTop < windowHeight - revealPoint) {
-                    el.classList.add('visible');
-                } 
+    // --- 5. SCROLL REVEAL ANIMASYONU (IntersectionObserver) ---
+    const revealElements = document.querySelectorAll('.reveal');
+    if (revealElements.length > 0) {
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                    // Animasyon bir kez göründükten sonra gözlemlemeyi bırak
+                    observer.unobserve(entry.target);
+                }
             });
+        }, { threshold: 0.15 });
+
+        revealElements.forEach(el => observer.observe(el));
+    }
+
+    // --- 6. MOBİL MENÜ FONKSİYONLARI ---
+    function closeMobileMenu() {
+        if (mobileMenu) {
+            mobileMenu.classList.remove('active');
+            body.style.overflow = '';
         }
+    }
 
-        // --- Scroll İlerleme Çubuğu ---
-        const progressBar = document.getElementById('progressBar');
-
-        function updateProgressBar() {
-            const scrollTotal = document.documentElement.scrollHeight - document.documentElement.clientHeight;
-            const scrolled = document.documentElement.scrollTop;
-            const progress = (scrolled / scrollTotal) * 100;
-            progressBar.style.width = progress + '%';
-        }
-
-        window.addEventListener('scroll', () => {
-            revealOnScroll();
-            updateProgressBar();
+    if (openMenuBtn) {
+        openMenuBtn.addEventListener('click', () => {
+            if (mobileMenu) {
+                mobileMenu.classList.add('active');
+                body.style.overflow = 'hidden';
+            }
         });
-        
-        revealOnScroll(); // Sayfa yüklendiğinde görünür olanları hemen göster
-        updateProgressBar();
+    }
 
-        // --- Mobil Menü Fonksiyonları ---
-        function closeMobileMenu() {
-            document.getElementById('mobileMenu').classList.remove('active');
-            document.body.style.overflow = '';
-        }
+    if (closeMenuBtn) {
+        closeMenuBtn.addEventListener('click', closeMobileMenu);
+    }
 
-        document.getElementById('openMenu')?.addEventListener('click', () => {
-            document.getElementById('mobileMenu').classList.add('active');
-            document.body.style.overflow = 'hidden';
+    // --- 7. FORM GÖNDERİMİ VE TOAST (Simüle edilmiş) ---
+    // (Gerçek form gönderimi için önceki konuşmadaki AJAX kodunu kullanmalısınız.)
+    if (contactForm && toast) {
+        contactForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            // ReCAPTCHA kontrolü (Eğer reCAPTCHA token'ını sunucuya göndermiyorsanız,
+            // burada sadece frontend'de işaretlenip işaretlenmediğini kontrol edebilirsiniz)
+            const recaptchaResponse = contactForm.querySelector('[name="g-recaptcha-response"]');
+            if (recaptchaResponse && !recaptchaResponse.value) {
+                // Bu kısmı Getform'a bırakıyorsanız bu kontrolü kaldırın
+                // veya özelleştirilmiş bir uyarı ekleyin.
+            }
+            
+            const btn = contactForm.querySelector('button');
+            const originalText = btn.innerHTML;
+
+            // Simüle edilmiş gönderim spinner'ı
+            btn.dataset.original = originalText;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Gönderiliyor...';
+            btn.disabled = true;
+
+            setTimeout(() => {
+                // Bu simülasyon yerine Getform veya AJAX gönderimi kodunuz gelmeli.
+                contactForm.reset();
+                btn.innerHTML = btn.dataset.original;
+                btn.disabled = false;
+
+                // Toast Göster
+                toast.innerHTML = '<i class="fas fa-check-circle" style="color: var(--success); margin-right: 12px; font-size:1.2rem;" aria-hidden="true"></i><span style="font-weight:500">Mesajınız başarıyla iletildi.</span>';
+                toast.style.transform = 'translateX(-50%) translateY(0)';
+                toast.style.opacity = '1';
+                
+                setTimeout(() => {
+                    toast.style.transform = 'translateX(-50%) translateY(100px)';
+                    toast.style.opacity = '0';
+                }, 4000);
+
+            }, 1500);
         });
+    }
 
-        document.getElementById('closeMenu')?.addEventListener('click', closeMobileMenu);
-        
-        // --- Form Gönderiminden Sonra Toast Gösterme ---
-        const contactForm = document.getElementById('contactForm');
-        const toast = document.getElementById('toast');
-    </script>
+</script>
 </body>
 </html>
